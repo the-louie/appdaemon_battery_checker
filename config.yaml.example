@@ -1,13 +1,24 @@
-example_motion:
-  module: i1_motion_lights
-  class: GenericMotion
-  sensor: binary_sensor.motion_sensor_home_security_motion_detection
-  state_id: unique_state_id_for_example 
-  light:
-    - light.lamp_1
-    - light.lamp_2
-  from: "off"
-  to: "on"
-  sunup: True # also when sun is up
-  timeout: 1200 # time to turn off again
+# Battery Checker Configuration Example
+# This app monitors battery levels of all devices in Home Assistant and sends notifications when batteries are low.
+
+check_all_batteries:
+  module: i1_battery_checker
+  class: BatteryCheck
+
+  # List of persons to notify about low battery conditions
+  persons:
+    - name: louie                    # Person's name (for reference)
+      notify: mobile_app_iphone_28  # Notification service to use (e.g., mobile_app, telegram, etc.)
+      tracker: device_tracker.iphone_28  # Optional: Only notify when person is home
+      cooldown: 120                   # Cooldown period in seconds between notifications (prevents spam)
+
+  # Optional: Override default battery thresholds
+  # low_battery_threshold: 20        # Percentage below which battery is considered low (default: 20%)
+  # critical_battery_threshold: 10   # Percentage below which battery is critical (default: 10%)
+
+  # Optional: Change the daily check time (default: 18:15)
+  # check_time: "18:15:00"
+
+  # Optional: Timezone for scheduling (default: Europe/Stockholm)
+  # timezone: "Europe/Stockholm"
 
