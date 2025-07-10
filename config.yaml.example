@@ -5,6 +5,9 @@ check_all_batteries:
   module: i1_battery_checker
   class: BatteryCheck
 
+  exclude:
+    - sensor.louies_iphone_2028
+
   # List of persons to notify about low battery conditions
   persons:
     - name: louie                    # Person's name (for reference)

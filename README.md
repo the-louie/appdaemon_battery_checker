@@ -6,10 +6,11 @@ An AppDaemon script that automatically monitors battery levels of all devices in
 
 - **Automatic Detection**: Monitors all battery sensors and binary low battery indicators
 - **Smart Filtering**: Excludes non-battery sensors (charging status, power, etc.)
+- **Entity Exclusion**: Easily exclude specific sensors from notifications using the `exclude` list
 - **Consolidated Notifications**: Sends one message with all low battery devices instead of individual alerts
 - **Two-Level Alerts**:
-  - Critical: ≤10% battery or binary sensors with "islow"
-  - Low: ≤20% battery or other low battery indicators
+  - Critical: ≤10% battery or binary sensors with "islow" (configurable)
+  - Low: ≤20% battery or other low battery indicators (configurable)
 - **Daily Scheduling**: Runs automatically at 18:15 daily (configurable)
 - **Cooldown Protection**: Prevents notification spam with configurable cooldown periods
 - **Action Support**: Users can dismiss notifications for 3 days via mobile app actions
@@ -34,6 +35,31 @@ See `config.yaml.example` for detailed configuration options. Key settings:
 - `persons`: List of people to notify with their notification services
 - `cooldown`: Seconds between notifications (prevents spam)
 - `tracker`: Optional device tracker to only notify when home
+- `exclude`: List of entity IDs to exclude from battery monitoring and notifications
+- `low_battery_threshold`: Battery percentage below which a device is considered low (default: 20)
+- `critical_battery_threshold`: Battery percentage below which a device is considered critical (default: 10)
+- `check_time`: Time of day for daily check (default: "18:15:00")
+- `timezone`: Timezone for scheduling (default: "Europe/Stockholm")
+
+### Example: Exclude List
+
+To exclude specific sensors from notifications, add them to the `exclude` list in your config:
+
+```yaml
+check_all_batteries:
+  module: i1_battery_checker
+  class: BatteryCheck
+
+  exclude:
+    - sensor.louies_iphone_2028
+    - sensor.some_other_sensor
+
+  persons:
+    - name: louie
+      notify: mobile_app_iphone_28
+      tracker: device_tracker.iphone_28
+      cooldown: 120
+```
 
 ## Example Output
 
@@ -47,6 +73,14 @@ See `config.yaml.example` for detailed configuration options. Key settings:
 • Hallway Sensor: 18%
 ```
 
+## Testing
+
+A standalone test script (`test_battery_checker.py`) is included to verify the exclude logic and threshold configuration. Run it with:
+
+```
+python test_battery_checker.py
+```
+
 ## Requirements
 
 - AppDaemon 4.x
@@ -54,5 +88,7 @@ See `config.yaml.example` for detailed configuration options. Key settings:
 - Notification services configured (mobile_app, telegram, etc.)
 
 ## License
+
+Copyright (c) the_louie
 
 This project is licensed under the BSD 2-Clause License - see the [LICENSE](LICENSE) file for details.
