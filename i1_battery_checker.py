@@ -50,6 +50,14 @@ class BatteryCheck(hass.Hass):
         self.check_time = self.args.get("check_time", "18:15:00")
         self.timezone_str = self.args.get("timezone", "Europe/Stockholm")
 
+        # Android companion-app delivery settings. The default HA notification channel
+        # can be disabled on the phone, which silently discards every notification sent
+        # to it - HA reports success and nothing arrives. Sending on a dedicated channel
+        # keeps these alerts independent of that setting and lets them be muted on
+        # their own without affecting other apps. See backlog T-52.
+        self.notification_channel = self.args.get("notification_channel", "battery_alerts")
+        self.notification_priority = self.args.get("notification_priority", "high")
+
         # Initialize cooldown tracking
         self.msg_cooldown: Dict[str, float] = {}
 
@@ -253,6 +261,22 @@ class BatteryCheck(hass.Hass):
         self._notify_persons("Batterivarning", full_message)
         self.log(f"Sent consolidated battery notification with {len(critical_devices)} critical and {len(low_devices)} low battery devices")
 
+    def _notification_data(self) -> dict:
+        """Build the companion-app data block for a notification.
+
+        Returns the Android delivery hints every notify call in this app must carry:
+        a dedicated channel, plus priority/ttl so the message is not deferred by Doze.
+        Returns an empty dict if no channel is configured, so the caller can pass it
+        unconditionally.
+        """
+        if not self.notification_channel:
+            return {}
+        data = {"channel": self.notification_channel}
+        if self.notification_priority:
+            data["priority"] = self.notification_priority
+            data["ttl"] = 0
+        return data
+
     def _notify_persons(self, title: str, message: str) -> None:
         """
         Send notification to all configured persons.
@@ -284,6 +308,7 @@ class BatteryCheck(hass.Hass):
                     title=title,
                     message=message,
                     data={
+                        **self._notification_data(),
                         "actions": [{
                             "action": f"{self.name}.ignore.{notify_addr}",
                             "title": "Ignorera 3d"
@@ -291,7 +316,7 @@ class BatteryCheck(hass.Hass):
                     }
                 )
                 self.msg_cooldown[notify_addr] = time.time()
-                self.log(f"Notification sent to {notify_addr}", level="DEBUG")
+                self.log(f"Notification sent to {notify_addr}", level="INFO")
             except Exception as e:
                 self.log(f"Failed to send notification to {notify_addr}: {e}", level="ERROR")
 
