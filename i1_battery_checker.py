@@ -18,6 +18,8 @@ import time
 from typing import List, Dict, Any, Optional
 import appdaemon.plugins.hass.hassapi as hass
 
+import notification_policy as policy
+
 # Set timezone for the application
 timezone = pytz.timezone('Europe/Stockholm')
 
@@ -57,6 +59,15 @@ class BatteryCheck(hass.Hass):
         # their own without affecting other apps. See backlog T-52.
         self.notification_channel = self.args.get("notification_channel", "battery_alerts")
         self.notification_priority = self.args.get("notification_priority", "high")
+
+        # Policy D2 quiet hours. A low battery is never urgent enough to wake
+        # the house - unlike a watchdog alert, there is no "news" case here, so
+        # notifications inside the window are held until it opens. The existing
+        # per-person `cooldown` still governs repeat frequency; this only adds
+        # the nightly pause.
+        self.quiet_hours = self.args.get("quiet_hours", True)
+        self.quiet_start = self.args.get("quiet_start", policy.DEFAULT_QUIET_START)
+        self.quiet_end = self.args.get("quiet_end", policy.DEFAULT_QUIET_END)
 
         # Initialize cooldown tracking
         self.msg_cooldown: Dict[str, float] = {}
@@ -277,6 +288,12 @@ class BatteryCheck(hass.Hass):
             data["ttl"] = 0
         return data
 
+    def _in_quiet_hours(self) -> bool:
+        """True when notifications should be held. Uses AppDaemon's clock."""
+        if not self.quiet_hours:
+            return False
+        return policy.in_quiet_hours(self.get_now().hour, self.quiet_start, self.quiet_end)
+
     def _notify_persons(self, title: str, message: str) -> None:
         """
         Send notification to all configured persons.
@@ -285,6 +302,13 @@ class BatteryCheck(hass.Hass):
             title: Notification title
             message: Notification message
         """
+        if self._in_quiet_hours():
+            self.log(
+                f"Holding battery notification until {self.quiet_start:02d}:00-"
+                f"{self.quiet_end:02d}:00 quiet hours end",
+                level="INFO",
+            )
+            return
         for person in self.persons:
             notify_addr = person.get("notify")
             cooldown = person.get("cooldown", 0)

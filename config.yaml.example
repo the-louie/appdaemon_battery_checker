@@ -25,3 +25,11 @@ check_all_batteries:
   # Optional: Timezone for scheduling (default: Europe/Stockholm)
   # timezone: "Europe/Stockholm"
 
+
+  # Policy D2 quiet hours. Unlike the weather alarms there is no critical case
+  # here - a low battery is never urgent enough to wake the house - so every
+  # notification inside the window is held until it opens. The per-person
+  # `cooldown` still governs repeat frequency; this only adds the nightly pause.
+  quiet_hours: true
+  quiet_start: 22               # hour 0-23, inclusive
+  quiet_end: 7                  # hour 0-23, exclusive
