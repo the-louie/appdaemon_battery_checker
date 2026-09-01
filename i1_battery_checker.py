@@ -292,7 +292,23 @@ class BatteryCheck(hass.Hass):
         """True when notifications should be held. Uses AppDaemon's clock."""
         if not self.quiet_hours:
             return False
-        return policy.in_quiet_hours(self.get_now().hour, self.quiet_start, self.quiet_end)
+        # datetime.now(self.timezone), NOT self.get_now().
+        #
+        # This app declares `async def initialize()`, so AppDaemon's get_now()
+        # returns a coroutine rather than a datetime -- ".hour" on it raises
+        # AttributeError: '_asyncio.Task' object has no attribute 'hour', which
+        # fails initialize() and takes the whole app down.
+        #
+        # This method is sync and sits three frames below an async caller, so
+        # awaiting is not available. self.timezone is a pytz timezone set in
+        # initialize() and already used elsewhere in this file, so the clock
+        # stays timezone-aware (T-07).
+        #
+        # The identical code IS correct in appdaemon_watchdog, which is a sync
+        # app. Copying it here without checking is what broke this.
+        return policy.in_quiet_hours(
+            datetime.now(self.timezone).hour, self.quiet_start, self.quiet_end
+        )
 
     def _notify_persons(self, title: str, message: str) -> None:
         """
