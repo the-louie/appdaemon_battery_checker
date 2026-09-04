@@ -339,14 +339,14 @@ class BatteryCheck(hass.Hass):
             if verdict == "expected":
                 suppressed.append(rec)
                 self.log(
-                    "[B005] {} is silent as expected until {} ({})".format(
+                    "[BAT005] {} is silent as expected until {} ({})".format(
                         eid, entry.review, entry.reason
                     )
                 )
                 continue
             if verdict == "expired":
                 self.log(
-                    "[B006] {} is silent and its expected-absent entry expired "
+                    "[BAT006] {} is silent and its expected-absent entry expired "
                     "on {} ({}) -- decide: replace the battery, retire the "
                     "device, or extend the review date".format(
                         eid, entry.review, entry.reason
@@ -364,7 +364,7 @@ class BatteryCheck(hass.Hass):
                 suppressed.append(rec)
                 continue
             self.log(
-                "[B004] {} ({}) is no longer in Home Assistant at all -- last "
+                "[BAT004] {} ({}) is no longer in Home Assistant at all -- last "
                 "seen by this app {:.1f} day(s) ago. The entity was removed, "
                 "renamed, or its integration is unloaded; a battery change will "
                 "not bring it back.".format(
@@ -382,7 +382,7 @@ class BatteryCheck(hass.Hass):
 
         for rec in new_absent:
             self.log(
-                "[B001] {} ({}) has STOPPED REPORTING. A battery device that "
+                "[BAT001] {} ({}) has STOPPED REPORTING. A battery device that "
                 "goes silent is the normal way a flat cell presents -- it does "
                 "not count down to zero, it stops answering.".format(
                     rec.name, rec.entity_id
@@ -390,10 +390,10 @@ class BatteryCheck(hass.Hass):
                 level="ERROR",
             )
         for rec in returned:
-            self.log("[B003] {} ({}) is reporting again".format(rec.name, rec.entity_id))
+            self.log("[BAT003] {} ({}) is reporting again".format(rec.name, rec.entity_id))
         if standing:
             self.log(
-                "[B002] {} battery device(s) still silent: {}".format(
+                "[BAT002] {} battery device(s) still silent: {}".format(
                     len(standing),
                     ", ".join(
                         "{} ({:.0f}d)".format(r.entity_id, r.age_days(now_epoch))
@@ -409,7 +409,7 @@ class BatteryCheck(hass.Hass):
         for eid in self.expected_absent:
             if eid in present and eid not in not_reporting:
                 self.log(
-                    "[B007] {} is reporting normally but is still listed as "
+                    "[BAT007] {} is reporting normally but is still listed as "
                     "expected-absent ({}) -- remove the entry".format(
                         eid, self.expected_absent[eid].reason
                     ),
@@ -418,7 +418,7 @@ class BatteryCheck(hass.Hass):
 
         if never_spoke:
             self.log(
-                "[B012] {} battery-shaped entit(ies) have never reported a "
+                "[BAT012] {} battery-shaped entit(ies) have never reported a "
                 "value and are treated as unimplemented, not dead: {}".format(
                     len(never_spoke), ", ".join(never_spoke)
                 ),
@@ -492,7 +492,7 @@ class BatteryCheck(hass.Hass):
             age = now_epoch - updated
             if age > cutoff:
                 self.log(
-                    "[B010] {} last updated {:.1f} day(s) ago, over the {:.0f} "
+                    "[BAT010] {} last updated {:.1f} day(s) ago, over the {:.0f} "
                     "day staleness threshold -- value may be frozen".format(
                         eid, age / 86400.0, self.stale_after_days
                     ),
@@ -528,7 +528,7 @@ class BatteryCheck(hass.Hass):
         raw = self.args.get("expected_absent") or {}
         if not isinstance(raw, dict):
             self.log(
-                "[B008] expected_absent must be a mapping of entity_id to "
+                "[BAT008] expected_absent must be a mapping of entity_id to "
                 "{{reason, review}}, got {} -- ignoring all of it".format(
                     type(raw).__name__
                 ),
@@ -540,7 +540,7 @@ class BatteryCheck(hass.Hass):
         for entity_id, spec in raw.items():
             if not isinstance(spec, dict):
                 self.log(
-                    "[B008] expected_absent['{}'] must be a mapping with reason "
+                    "[BAT008] expected_absent['{}'] must be a mapping with reason "
                     "and review, got {} -- entry ignored".format(
                         entity_id, type(spec).__name__
                     ),
@@ -551,7 +551,7 @@ class BatteryCheck(hass.Hass):
             reason = str(spec.get("reason") or "").strip()
             if not reason:
                 self.log(
-                    "[B008] expected_absent['{}'] has no reason -- entry "
+                    "[BAT008] expected_absent['{}'] has no reason -- entry "
                     "ignored. A suppression nobody can explain is one nobody "
                     "dares remove.".format(entity_id),
                     level="ERROR",
@@ -561,7 +561,7 @@ class BatteryCheck(hass.Hass):
             review_raw = spec.get("review")
             if review_raw is None:
                 self.log(
-                    "[B008] expected_absent['{}'] has no review date -- entry "
+                    "[BAT008] expected_absent['{}'] has no review date -- entry "
                     "ignored. Without one the suppression is permanent.".format(
                         entity_id
                     ),
@@ -577,7 +577,7 @@ class BatteryCheck(hass.Hass):
 
         if parsed:
             self.log(
-                "[B009] {} expected-absent entrie(s): {}".format(
+                "[BAT009] {} expected-absent entrie(s): {}".format(
                     len(parsed),
                     ", ".join(
                         "{} until {}".format(e.entity_id, e.review)
@@ -597,7 +597,7 @@ class BatteryCheck(hass.Hass):
             return date.fromisoformat(str(value).strip())
         except (ValueError, TypeError):
             self.log(
-                "[B008] expected_absent['{}'] review '{}' is not a YYYY-MM-DD "
+                "[BAT008] expected_absent['{}'] review '{}' is not a YYYY-MM-DD "
                 "date -- entry ignored".format(entity_id, value),
                 level="ERROR",
             )
@@ -633,7 +633,7 @@ class BatteryCheck(hass.Hass):
                 raw = json.load(fh)
         except FileNotFoundError:
             self.log(
-                "[B011] no roster at {} yet -- this run learns which entities "
+                "[BAT011] no roster at {} yet -- this run learns which entities "
                 "report, and reports absences from the next run on".format(
                     self.roster_file
                 )
@@ -641,7 +641,7 @@ class BatteryCheck(hass.Hass):
             return {}, {}
         except (OSError, ValueError) as err:
             self.log(
-                "[B011] could not read roster {}: {} -- continuing with an "
+                "[BAT011] could not read roster {}: {} -- continuing with an "
                 "empty roster".format(self.roster_file, err),
                 level="WARNING",
             )
@@ -662,7 +662,7 @@ class BatteryCheck(hass.Hass):
                 )
             except (AttributeError, TypeError, ValueError):
                 self.log(
-                    "[B011] roster entry for {} is malformed -- ignored".format(eid),
+                    "[BAT011] roster entry for {} is malformed -- ignored".format(eid),
                     level="WARNING",
                 )
 
@@ -692,7 +692,7 @@ class BatteryCheck(hass.Hass):
             os.replace(tmp, self.roster_file)
         except OSError as err:
             self.log(
-                "[B011] could not write roster {}: {} -- absences will be "
+                "[BAT011] could not write roster {}: {} -- absences will be "
                 "re-announced after the next restart".format(self.roster_file, err),
                 level="WARNING",
             )

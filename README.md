@@ -107,10 +107,10 @@ kind of alert useless:
 
 | | what it means | what happens |
 |---|---|---|
-| **new** | silent now, reporting at the last check | its own notification, `[B001]` at ERROR |
-| **standing** | silent now and silent before | one summary line, `[B002]` at WARNING |
-| **returned** | was silent, reporting again | notification, `[B003]` — closes the loop |
-| **gone** | no longer in Home Assistant at all | `[B004]` at ERROR; a battery will not fix it |
+| **new** | silent now, reporting at the last check | its own notification, `[BAT001]` at ERROR |
+| **standing** | silent now and silent before | one summary line, `[BAT002]` at WARNING |
+| **returned** | was silent, reporting again | notification, `[BAT003]` — closes the loop |
+| **gone** | no longer in Home Assistant at all | `[BAT004]` at ERROR; a battery will not fix it |
 
 Seventeen months-old corpses must not drown out the one device that died last
 night, which is the whole reason for the split.
@@ -137,5 +137,5 @@ standing absence as news.
 A first run with no roster is **quiet by design**: it learns which entities
 report and alerts from the second run on. To start with real history instead,
 copy `battery_roster.seed.json` — measured 2026-09-04, with `since` timestamps
-taken from ZHA's own `last_seen`, so the ages in `[B002]` are true — to that
+taken from ZHA's own `last_seen`, so the ages in `[BAT002]` are true — to that
 path before the first run.
