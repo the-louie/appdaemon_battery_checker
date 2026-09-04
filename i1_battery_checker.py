@@ -59,6 +59,42 @@ class ExpectedAbsence:
 
 
 @dataclass
+class NotifyOutcome:
+    """What a notification attempt actually achieved.
+
+    T-52 exists because notifications were being discarded while the log said
+    they had been sent. Fixing the delivery mechanism without fixing the
+    reporting would leave the same lie in place, one layer down: the caller
+    logged "Sent consolidated battery notification" unconditionally, and
+    `_notify_persons` can send nothing four different ways.
+
+    `held_quiet_hours` is kept apart from the rest deliberately. A held message
+    is a decision working correctly; zero recipients for any other reason is a
+    failure, and the two must not produce the same log line.
+    """
+
+    sent: int = 0
+    held_quiet_hours: bool = False
+    cooldown: int = 0
+    no_address: int = 0
+    failed: int = 0
+
+    @property
+    def reached_nobody(self) -> bool:
+        """True when the message was meant to go out and did not."""
+        return self.sent == 0 and not self.held_quiet_hours
+
+    def summary(self) -> str:
+        bits = [f"{self.sent} sent"]
+        for n, label in ((self.cooldown, "in cooldown"),
+                         (self.no_address, "no address"),
+                         (self.failed, "failed")):
+            if n:
+                bits.append(f"{n} {label}")
+        return ", ".join(bits)
+
+
+@dataclass
 class AbsentBattery:
     """One battery entity that is not reporting, and how long that has been so."""
 
@@ -462,7 +498,18 @@ class BatteryCheck(hass.Hass):
                 lines.append("")
             lines.append("Svarar igen:")
             lines.extend("• {}".format(r.name) for r in returned)
-        self._notify_persons("Sensor tyst", "\n".join(lines), cooldown_key="absent")
+        outcome = self._notify_persons("Sensor tyst", "\n".join(lines), cooldown_key="absent")
+        if outcome.reached_nobody:
+            # O2 says no sensor dies without the owner knowing. An alert that
+            # reached no one is that objective failing quietly, so it must not
+            # pass without a line of its own.
+            self.log(
+                "[BAT013] sensor-silence alert reached NOBODY ({}) -- {} newly "
+                "silent, {} returned".format(
+                    outcome.summary(), len(new_absent), len(returned)
+                ),
+                level="ERROR",
+            )
 
     def _check_stale(self, present: Dict[str, Dict[str, Any]]) -> None:
         """Report entities that still answer but have not been updated in a while.
@@ -832,9 +879,24 @@ class BatteryCheck(hass.Hass):
         # Join all parts into one message
         full_message = "\n".join(message_parts)
 
-        # Send the consolidated notification
-        self._notify_persons("Batterivarning", full_message)
-        self.log(f"Sent consolidated battery notification with {len(critical_devices)} critical and {len(low_devices)} low battery devices")
+        # Send the consolidated notification, and report what actually happened.
+        #
+        # This used to log "Sent consolidated battery notification ..."
+        # unconditionally, immediately after a call that can send nothing four
+        # ways. That is the same defect T-52 was opened for -- a log asserting a
+        # delivery it never established -- reproduced one layer up.
+        outcome = self._notify_persons("Batterivarning", full_message)
+        detail = f"{len(critical_devices)} critical and {len(low_devices)} low battery devices"
+        if outcome.held_quiet_hours:
+            self.log(f"Battery notification held for quiet hours ({detail})")
+        elif outcome.reached_nobody:
+            self.log(
+                f"Battery notification reached NOBODY ({outcome.summary()}) -- "
+                f"{detail} went unreported",
+                level="WARNING",
+            )
+        else:
+            self.log(f"Battery notification: {outcome.summary()}; {detail}")
 
     def _notification_data(self) -> dict:
         """Build the companion-app data block for a notification.
@@ -874,7 +936,7 @@ class BatteryCheck(hass.Hass):
             datetime.now(self.timezone).hour, self.quiet_start, self.quiet_end
         )
 
-    def _notify_persons(self, title: str, message: str, cooldown_key: str = "") -> None:
+    def _notify_persons(self, title: str, message: str, cooldown_key: str = "") -> NotifyOutcome:
         """
         Send notification to all configured persons.
 
@@ -890,13 +952,15 @@ class BatteryCheck(hass.Hass):
                 low-battery digest and its existing "Ignorera 3d" action are
                 unchanged.
         """
+        outcome = NotifyOutcome()
         if self._in_quiet_hours():
             self.log(
                 f"Holding battery notification until {self.quiet_start:02d}:00-"
                 f"{self.quiet_end:02d}:00 quiet hours end",
                 level="INFO",
             )
-            return
+            outcome.held_quiet_hours = True
+            return outcome
         for person in self.persons:
             notify_addr = person.get("notify")
             cooldown = person.get("cooldown", 0)
@@ -904,6 +968,7 @@ class BatteryCheck(hass.Hass):
             # Validate notify_addr exists
             if not notify_addr:
                 self.log(f"Missing notify address for person: {person.get('name', 'Unknown')}", level="WARNING")
+                outcome.no_address += 1
                 continue
 
             key = f"{notify_addr}|{cooldown_key}" if cooldown_key else notify_addr
@@ -913,6 +978,7 @@ class BatteryCheck(hass.Hass):
                 time_since_last = time.time() - self.msg_cooldown.get(key, 0)
                 if time_since_last < int(cooldown):
                     self.log(f"Cooldown activated for {key}, last msg sent {time_since_last:.0f}s ago", level="DEBUG")
+                    outcome.cooldown += 1
                     continue
 
             # Send notification
@@ -931,8 +997,11 @@ class BatteryCheck(hass.Hass):
                 )
                 self.msg_cooldown[key] = time.time()
                 self.log(f"Notification sent to {notify_addr}", level="INFO")
+                outcome.sent += 1
             except Exception as e:
                 self.log(f"Failed to send notification to {notify_addr}: {e}", level="ERROR")
+                outcome.failed += 1
+        return outcome
 
     def phone_action(self, event_name: str, data: Dict[str, Any], kwargs: Dict[str, Any]) -> None:
         """
