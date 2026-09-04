@@ -139,3 +139,15 @@ report and alerts from the second run on. To start with real history instead,
 copy `battery_roster.seed.json` — measured 2026-09-04, with `since` timestamps
 taken from ZHA's own `last_seen`, so the ages in `[BAT002]` are true — to that
 path before the first run.
+
+### One AppDaemon setting these log lines depend on
+
+`[BAT001]` and `[BAT002]` embed the device's `friendly_name`, so a name like
+`Källare t/h batteri` only survives to the log if `appdaemon.yaml` sets
+
+    ascii_encode: false
+
+AppDaemon defaults this to **true**, which encodes every message to UTF-8 and
+then decodes it back as ASCII with `errors="replace"` — turning each `ö` into
+two U+FFFD. Notifications are unaffected either way; `call_service` does not go
+through `log()`. See H-29.
