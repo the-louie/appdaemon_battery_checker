@@ -1,0 +1,152 @@
+{
+  "absent": {
+    "sensor.datorrummet_batteri": {
+      "kind": "unavailable",
+      "name": "Datorrummet  Batteri",
+      "since": 1730320271.0
+    },
+    "sensor.hallen_batteri": {
+      "kind": "unavailable",
+      "name": "Hallen Batteri",
+      "since": 1786178012.0
+    },
+    "sensor.lumi_lumi_sens_75f60802_power": {
+      "kind": "unavailable",
+      "name": "Badrum temp-fukt Battery",
+      "since": 1757861174.0
+    },
+    "sensor.lumi_lumi_sens_battery": {
+      "kind": "unavailable",
+      "name": "Entre temp Battery",
+      "since": 1758326992.0
+    },
+    "sensor.lumi_lumi_sens_power": {
+      "kind": "unavailable",
+      "name": "lgh köket temp power",
+      "since": 1758949716.0
+    },
+    "sensor.lumi_lumi_sensor_magnet_aq2_power": {
+      "kind": "unavailable",
+      "name": "uterum skjutdörr power",
+      "since": 1788515175.0
+    },
+    "sensor.lumi_lumi_weather_battery": {
+      "kind": "unavailable",
+      "name": "v0 rosa rummet temp Batteri",
+      "since": 1774100907.0
+    },
+    "sensor.lumi_lumi_weather_battery_3": {
+      "kind": "unavailable",
+      "name": "barnens sovrum temp  Battery",
+      "since": 1771655955.0
+    },
+    "sensor.lumi_lumi_weather_battery_4": {
+      "kind": "unavailable",
+      "name": "tvättstuga temp Battery",
+      "since": 1779817286.0
+    },
+    "sensor.lumi_lumi_weather_battery_6": {
+      "kind": "unavailable",
+      "name": "Garage Temp  Battery",
+      "since": 1758368157.0
+    },
+    "sensor.lumi_lumi_weather_power": {
+      "kind": "unavailable",
+      "name": "sovrum temp power",
+      "since": 1767878421.0
+    },
+    "sensor.toavind_batteri": {
+      "kind": "unavailable",
+      "name": "Toavind Batteri",
+      "since": 1767879071.0
+    },
+    "sensor.ute_uterum_battery": {
+      "kind": "unavailable",
+      "name": "Uterum xiaomi batteri",
+      "since": 1725474698.0
+    },
+    "sensor.v0_kallare_th_batt": {
+      "kind": "unavailable",
+      "name": "Källare t/h batteri",
+      "since": 1775030517.0
+    },
+    "sensor.v0_kontoret_power": {
+      "kind": "unavailable",
+      "name": "Kontoret motion power",
+      "since": 1734196835.0
+    },
+    "sensor.v2_vind_anders_temp_batteri": {
+      "kind": "unavailable",
+      "name": "Vind Anders temp Batteri",
+      "since": 1767062043.0
+    },
+    "sensor.v2_vind_banjo_batteri_2": {
+      "kind": "unavailable",
+      "name": "Vind banjo Batteri",
+      "since": 1753231453.0
+    },
+    "sensor.v2_vind_pojkarna_temp_batteri": {
+      "kind": "unavailable",
+      "name": "Vind pojkarna temp Batteri",
+      "since": 1758372354.0
+    }
+  },
+  "seen_healthy": {
+    "binary_sensor.ecowitt_wh65batt": 1788515175.294,
+    "binary_sensor.slim_multi_sensor_pir_temperature_illumination_low_battery_level": 1788515175.294,
+    "binary_sensor.slim_multi_sensor_pir_temperature_illumination_low_battery_level_2": 1788515175.294,
+    "binary_sensor.v1_flood_kitchen_low_battery_level": 1788515175.294,
+    "sensor.altandorr_batteri": 1788515175.294,
+    "sensor.anderss_ipad_battery_level": 1788515175.294,
+    "sensor.angelinas_iphone_2025_battery_level": 1788515175.294,
+    "sensor.battery_state_of_capacity": 1788515175.294,
+    "sensor.brandvarnare_hallen_batteri": 1788515175.294,
+    "sensor.brandvarnare_korridoren_batteri": 1788515175.294,
+    "sensor.brandvarnare_tvattstuga_batteri": 1788515175.294,
+    "sensor.brandvarnare_vr_batteri": 1788515175.294,
+    "sensor.datorrummet_batteri": 1730320271.0,
+    "sensor.entredorr_batteri": 1788515175.294,
+    "sensor.hallen_batteri": 1786178012.0,
+    "sensor.kallardorren_batteri": 1788515175.294,
+    "sensor.keypad_batteri": 1788515175.294,
+    "sensor.koket_temp_2_batteri": 1788515175.294,
+    "sensor.korridoren_batteri": 1788515175.294,
+    "sensor.lgh_hall_batteri": 1788515175.294,
+    "sensor.lumi_lumi_sens_75f60802_power": 1757861174.0,
+    "sensor.lumi_lumi_sens_battery": 1758326992.0,
+    "sensor.lumi_lumi_sens_power": 1758949716.0,
+    "sensor.lumi_lumi_sensor_magnet_aq2_power": 1788515175.0,
+    "sensor.lumi_lumi_weather_battery": 1774100907.0,
+    "sensor.lumi_lumi_weather_battery_2": 1788515175.294,
+    "sensor.lumi_lumi_weather_battery_3": 1771655955.0,
+    "sensor.lumi_lumi_weather_battery_4": 1779817286.0,
+    "sensor.lumi_lumi_weather_battery_5": 1788515175.294,
+    "sensor.lumi_lumi_weather_battery_6": 1758368157.0,
+    "sensor.lumi_lumi_weather_battery_7": 1788515175.294,
+    "sensor.lumi_lumi_weather_power": 1767878421.0,
+    "sensor.maggans_dorr_batteri": 1788515175.294,
+    "sensor.pixel_6_battery_level": 1788515175.294,
+    "sensor.pixel_9_pro_battery_level": 1788515175.294,
+    "sensor.slim_multi_sensor_pir_temperature_illumination_battery_level": 1788515175.294,
+    "sensor.slim_multi_sensor_pir_temperature_illumination_battery_level_2": 1788515175.294,
+    "sensor.slim_multi_sensor_pir_temperature_illumination_battery_level_3": 1788515175.294,
+    "sensor.smoke_alarm_batteri": 1788515175.294,
+    "sensor.sovrum_balkong_batteri": 1788515175.294,
+    "sensor.toavind_batteri": 1767879071.0,
+    "sensor.trapphus_overvaning_batteri": 1788515175.294,
+    "sensor.tvrum_temp_batteri": 1788515175.294,
+    "sensor.ute_uterum_battery": 1725474698.0,
+    "sensor.v0_kallare_th_batt": 1775030517.0,
+    "sensor.v0_kontoret_power": 1734196835.0,
+    "sensor.v1_balkong_dorr_batteri": 1788515175.294,
+    "sensor.v1_flood_kitchen_battery_level": 1788515175.294,
+    "sensor.v1_koket_temp_bat": 1788515175.294,
+    "sensor.v2_vind_anders_temp_batteri": 1767062043.0,
+    "sensor.v2_vind_banjo_batteri_2": 1753231453.0,
+    "sensor.v2_vind_pojkarna_temp_batteri": 1758372354.0,
+    "sensor.varmelarm_lgh_koket_batteri": 1788515175.294,
+    "sensor.verkstaden_v0_verkstad_eye_battery_level": 1788515175.294,
+    "sensor.vindsvaning_batteri": 1788515175.294,
+    "sensor.vr_door_batteri": 1788515175.294
+  }
+}

@@ -33,3 +33,41 @@ check_all_batteries:
   quiet_hours: true
   quiet_start: 22               # hour 0-23, inclusive
   quiet_end: 7                  # hour 0-23, exclusive
+
+  # ── Devices that stop reporting (O2) ────────────────────────────────
+  #
+  # A flat cell does not report 1%. The device drops off the mesh and every one
+  # of its entities turns `unavailable` -- which the level check skips, so the
+  # louder the failure the quieter this app used to get. `report_absent` is the
+  # other half: it watches for battery entities that go silent.
+  report_absent: true
+
+  # Where the roster of seen entities is kept. Deliberately OUTSIDE the app
+  # directory: a redeploy must not wipe it, or every standing absence gets
+  # re-announced as if it were new.
+  #
+  # First run with no roster is quiet by design -- it learns which entities
+  # report, and alerts from the second run on. To start with real history
+  # instead, copy battery_roster.seed.json (measured 2026-09-04) to this path
+  # before the first run.
+  roster_file: /conf/battery_roster.json
+
+  # Devices allowed to be silent, with a reason and a review date. Both are
+  # mandatory and a malformed entry is dropped with an ERROR -- a suppression
+  # nobody can explain is one nobody dares remove, and one with no expiry
+  # outlives the person who set it.
+  #
+  # expected_absent:
+  #   sensor.v2_kok_girlang_battery:
+  #     reason: julgransbelysning, urkopplad utanför december
+  #     review: 2026-12-01
+
+  # Entities that still answer but have not been updated in this many days.
+  # OFF by default and that is measured, not lazy: Home Assistant only moves
+  # `last_updated` when a value actually changes, so a healthy sensor sitting
+  # at 100% for two months looks identical to a frozen one, and a restart
+  # rewrites the timestamp for every restored entity. All 17 long-dead ZHA
+  # devices in this house present as `unavailable`, which report_absent catches
+  # reliably, so this is not needed here. Enable only with a threshold you have
+  # a reason for.
+  # stale_after_days: 0

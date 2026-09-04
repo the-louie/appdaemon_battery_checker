@@ -92,3 +92,50 @@ python test_battery_checker.py
 Copyright (c) the_louie
 
 This project is licensed under the BSD 2-Clause License - see the [LICENSE](LICENSE) file for details.
+
+## Devices that stop reporting
+
+A flat cell does not report 1%. The device drops off the mesh, every one of its
+entities turns `unavailable`, and until 2026-09-04 this app skipped exactly
+that state — so the louder the failure, the quieter it got. Measured on the
+estate it runs on, seventeen battery devices had died that way, between 27 days
+and two years earlier, without a single notification (see H-27).
+
+`report_absent: true` (the default) adds the other half. It classifies silent
+battery entities into populations, because conflating them is what makes this
+kind of alert useless:
+
+| | what it means | what happens |
+|---|---|---|
+| **new** | silent now, reporting at the last check | its own notification, `[B001]` at ERROR |
+| **standing** | silent now and silent before | one summary line, `[B002]` at WARNING |
+| **returned** | was silent, reporting again | notification, `[B003]` — closes the loop |
+| **gone** | no longer in Home Assistant at all | `[B004]` at ERROR; a battery will not fix it |
+
+Seventeen months-old corpses must not drown out the one device that died last
+night, which is the whole reason for the split.
+
+### Two rules that keep it honest
+
+**An entity that has never reported a value is not a dead battery.** Z-Wave
+publishes a capability entity per command-class property, and the ones the
+hardware does not implement sit at `unavailable` for life — `Motion Ute Norr`
+alone contributes nine while the device itself reports 60%. The app only counts
+an entity as absent if it has seen it report at least once, which needs no
+maintenance and does not rot the way an exclude list would.
+
+**Suppression needs a reason and an expiry.** `expected_absent` takes both and
+rejects an entry missing either, at ERROR. A suppression nobody can explain is
+one nobody dares remove; one with no review date outlives the person who set it.
+
+### The roster file
+
+State lives in `roster_file` (default `/conf/battery_roster.json`), deliberately
+outside the app directory so a redeploy does not wipe it and re-announce every
+standing absence as news.
+
+A first run with no roster is **quiet by design**: it learns which entities
+report and alerts from the second run on. To start with real history instead,
+copy `battery_roster.seed.json` — measured 2026-09-04, with `since` timestamps
+taken from ZHA's own `last_seen`, so the ages in `[B002]` are true — to that
+path before the first run.
