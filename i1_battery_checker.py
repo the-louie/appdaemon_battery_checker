@@ -21,13 +21,16 @@ import time
 from typing import List, Dict, Any, Optional, Tuple
 import appdaemon.plugins.hass.hassapi as hass
 
+import ha_states
 import notification_policy as policy
 
 # Set timezone for the application
 timezone = pytz.timezone('Europe/Stockholm')
 
 # States that mean "this entity is not telling us anything".
-NOT_REPORTING = ("unavailable", "unknown", "none", "")
+# The definition is estate-wide since S7-07 (T-06); this alias keeps the
+# module's public name for its tests and callers.
+NOT_REPORTING = ha_states.HA_UNAVAILABLE_STATES
 
 # How an entity failed to report. The distinction drives the message, because
 # the two need different actions from a human.
@@ -304,10 +307,7 @@ class BatteryCheck(hass.Hass):
         This is the state a battery device lands in when the cell finally dies:
         not a low number, no number at all.
         """
-        state = entity.get("state")
-        if state is None:
-            return True
-        return str(state).strip().lower() in NOT_REPORTING
+        return ha_states.not_reporting(entity.get("state"))
 
     @staticmethod
     def _entity_name(entity: Dict[str, Any], entity_key: str) -> str:
@@ -780,7 +780,9 @@ class BatteryCheck(hass.Hass):
         if any(term in entity_key.lower() for term in skip_terms):
             return
 
-        if state not in ["unavailable", "unknown"] and state is not None:
+        # The shared predicate, replacing a private two-state list that let ""
+        # through to a float() call (S7-07).
+        if ha_states.is_reporting(state):
             self.log(f"* {entity_key} = {state}{uof}")
             self._evaluate_battery_level(entity_key, str(state), attributes, critical_devices, low_devices)
 
