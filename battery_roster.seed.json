@@ -20,11 +20,6 @@
       "name": "Entre temp Battery",
       "since": 1758326992.0
     },
-    "sensor.lumi_lumi_sensor_magnet_aq2_power": {
-      "kind": "unavailable",
-      "name": "uterum skjutdörr power",
-      "since": 1788515175.0
-    },
     "sensor.lumi_lumi_weather_battery": {
       "kind": "unavailable",
       "name": "v0 rosa rummet temp Batteri",
@@ -109,7 +104,7 @@
     "sensor.lgh_hall_batteri": 1788515175.294,
     "sensor.lumi_lumi_sens_75f60802_power": 1757861174.0,
     "sensor.lumi_lumi_sens_battery": 1758326992.0,
-    "sensor.lumi_lumi_sensor_magnet_aq2_power": 1788515175.0,
+    "sensor.lumi_lumi_sensor_magnet_aq2_power": 1789984166.8,
     "sensor.lumi_lumi_weather_battery": 1774100907.0,
     "sensor.lumi_lumi_weather_battery_2": 1788515175.294,
     "sensor.lumi_lumi_weather_battery_3": 1771655955.0,
