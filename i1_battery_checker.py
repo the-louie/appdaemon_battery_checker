@@ -22,6 +22,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import appdaemon.plugins.hass.hassapi as hass
 
 import ha_states
+import irisone_bus
 import notification_policy as policy
 
 # Set timezone for the application
@@ -129,6 +130,13 @@ class BatteryCheck(hass.Hass):
     async def initialize(self) -> None:
         """Initialize the battery checker application."""
         self.log("Loading BatteryCheck()")
+        # A-71.5: an older shared module winning AppDaemon's import path must stop
+        # the app here, where the watchdog sees it, not at 18:15.
+        if not hasattr(policy, "should_notify") or not hasattr(irisone_bus, "presence_for_target"):
+            raise RuntimeError(f"stale shared module on the import path: "
+                               f"{policy.__file__}, {irisone_bus.__file__}")
+        # irisone.* entities from the last full-state read; presence for the gate.
+        self._irisone: Dict[str, Any] = {}
 
         # Get configuration from args with defaults
         self.persons = self.args.get("persons", [])
@@ -251,6 +259,10 @@ class BatteryCheck(hass.Hass):
         """
         self.log("Running daily battery check...")
         states = await self.get_state()
+        # The gate's presence read rides on this one full-state fetch: the sync
+        # notify path below cannot await get_state() in this async app.
+        self._irisone = {k: v for k, v in (states or {}).items()
+                         if k.startswith(f"{irisone_bus.DOMAIN}.")}
 
         # Lists to collect devices with low battery
         critical_devices: List[str] = []
@@ -975,6 +987,13 @@ class BatteryCheck(hass.Hass):
 
             key = f"{notify_addr}|{cooldown_key}" if cooldown_key else notify_addr
 
+            # Every battery message is URGENT (owner, IQ-19 2026-10-29: O2, no
+            # sensor dies quietly). The gate never drops it; it is called so the
+            # class is stated (IQ-12) and the decision is counted (IQ-28).
+            in_home, _ = irisone_bus.presence_for_target(self._irisone, notify_addr, time.time())
+            _, gate_reason = policy.should_notify(policy.URGENT, in_home)
+            self._report_gate(cooldown_key or "low", notify_addr, gate_reason)
+
             # Check cooldown (avoid division by zero)
             if cooldown > 0:
                 time_since_last = time.time() - self.msg_cooldown.get(key, 0)
@@ -1004,6 +1023,14 @@ class BatteryCheck(hass.Hass):
                 self.log(f"Failed to send notification to {notify_addr}: {e}", level="ERROR")
                 outcome.failed += 1
         return outcome
+
+    def _report_gate(self, key: str, target: str, reason: str) -> None:
+        """Count the decision in irisone.notify_gate_stats (IQ-28). Never blocks a send."""
+        try:
+            self.fire_event(irisone_bus.GATE_EVENT, **irisone_bus.gate_event(
+                self.name, key, target, policy.URGENT, True, reason))
+        except Exception as e:  # the counter is evidence, not a dependency
+            self.log(f"[presence] could not report gate decision: {e}", level="WARNING")
 
     def phone_action(self, event_name: str, data: Dict[str, Any], kwargs: Dict[str, Any]) -> None:
         """

@@ -34,7 +34,7 @@ See `config.yaml.example` for detailed configuration options. Key settings:
 
 - `persons`: List of people to notify with their notification services
 - `cooldown`: Seconds between notifications (prevents spam)
-- `tracker`: Optional device tracker to only notify when home
+- `tracker`: **removed (T-72a).** It was never read by the code (since 2025-07-08). Battery messages are all urgent (owner, 2026-10-29) and reach every person wherever they are.
 - `exclude`: List of entity IDs to exclude from battery monitoring and notifications
 - `low_battery_threshold`: Battery percentage below which a device is considered low (default: 20)
 - `critical_battery_threshold`: Battery percentage below which a device is considered critical (default: 10)
@@ -57,7 +57,6 @@ check_all_batteries:
   persons:
     - name: louie
       notify: mobile_app_iphone_28
-      tracker: device_tracker.iphone_28
       cooldown: 120
 ```
 

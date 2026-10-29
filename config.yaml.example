@@ -12,7 +12,6 @@ check_all_batteries:
   persons:
     - name: louie                    # Person's name (for reference)
       notify: mobile_app_iphone_28  # Notification service to use (e.g., mobile_app, telegram, etc.)
-      tracker: device_tracker.iphone_28  # Optional: Only notify when person is home
       cooldown: 120                   # Cooldown period in seconds between notifications (prevents spam)
 
   # Optional: Override default battery thresholds
